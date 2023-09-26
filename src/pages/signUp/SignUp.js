@@ -10,20 +10,22 @@ import {
   Box,
   Snackbar,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Paper,
 } from "@mui/material";
-
 
 import SignUpImage from "../../assets/signup.svg";
 import SignUpValidationSchema from "./signUp.schema";
 import { signUpUser, clearState } from "./signUp.slice";
+import { SIGN_UP_FIELDS } from "./constants";
 
 const SignUp = () => {
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { isSuccess, isError, error, isLoading } = useSelector((state) => state.signUp);
+  const { isSuccess, isError, error, isLoading } = useSelector(
+    (state) => state.signUp
+  );
 
   const [isShowSnackBar, setIsShowSnackBar] = useState({
     open: false,
@@ -94,62 +96,71 @@ const SignUp = () => {
               {altMessage}
             </Alert>
           </Snackbar>
-          <Typography component="h1" variant="h5">
-            Sign up
-          </Typography>
-          <Box component="form" onSubmit={formik.handleSubmit} sx={{ mt: 3 }}>
-            <Grid container spacing={3}>
-              {["name", "email", "password", "password_confirmation"].map(
-                (field) => (
-                  <Grid item xs={12} key={field}>
+          <Paper
+            elevation={3}
+            style={{
+              padding: "20px",
+              background: "#fbfbfb",
+              border: "1px solid #ccc",
+            }}
+          >
+            <Typography component="h1" variant="h5">
+              Sign up
+            </Typography>
+            <Box component="form" onSubmit={formik.handleSubmit} sx={{ mt: 3 }}>
+              <Grid container spacing={3}>
+                {Object.entries(SIGN_UP_FIELDS).map(([value, label]) => (
+                  <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      id={field}
-                      name={field}
-                      label={
-                        field === "password_confirmation"
-                          ? "Confirm Password"
-                          : field
-                      }
+                      id={value}
+                      name={value}
+                      label={label}
                       type={
-                        field === "password" ||
-                        field === "password_confirmation"
+                        value === "password" ||
+                        value === "password_confirmation"
                           ? "password"
                           : "text"
                       }
                       variant="outlined"
-                      value={formik.values[field]}
+                      value={formik.values[value]}
                       onChange={formik.handleChange}
                       error={
-                        formik.touched[field] && Boolean(formik.errors[field])
+                        formik.touched[value] && Boolean(formik.errors[value])
                       }
-                      helperText={formik.touched[field] && formik.errors[field]}
+                      helperText={formik.touched[value] && formik.errors[value]}
                     />
                   </Grid>
-                )
+                ))}
+              </Grid>
+              {isLoading ? (
+                <CircularProgress />
+              ) : (
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  sx={{ mt: 3, mb: 2 }}
+                >
+                  Sign Up
+                </Button>
               )}
-            </Grid>
-            { isLoading ? <CircularProgress/> :
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-                sx={{ mt: 3, mb: 2 }}
-              >
-                Sign Up
-              </Button>
-            }
 
-            <Grid container justifyContent="center">
-              <Typography>
-                Have an account?{" "}
-                <Link to="/" variant="body2">
+              <Grid container justifyContent="center">
+                <Typography
+                  sx={{
+                    mr: 1,
+                  }}
+                >
+                  Have an account?
+                </Typography>
+                <Link style={{ marginTop: "2px" }} to="/" variant="body2">
                   Sign in
                 </Link>
-              </Typography>
-            </Grid>
-          </Box>
+              </Grid>
+            </Box>
+          </Paper>
         </Box>
       </Grid>
     </Grid>

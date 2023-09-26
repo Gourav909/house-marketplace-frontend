@@ -5,15 +5,15 @@ import {
   Button,
   Box,
   Grid,
-  Link,
   Typography,
   Snackbar,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Paper,
 } from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 
 import LoginImage from "../../assets/login.svg";
 import { LoginValidationSchema } from "./login.schema";
@@ -30,18 +30,19 @@ const LoginPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { isSuccess, isError, error, isLoading } = useSelector((state) => state.login);
+  const { isSuccess, isError, error, isLoading } = useSelector(
+    (state) => state.login
+  );
 
   const { values, errors, handleBlur, handleChange, handleSubmit, touched } =
     useFormik({
-      initialValues:  { email: "", password: "" },
+      initialValues: { email: "", password: "" },
       validationSchema: LoginValidationSchema,
 
       onSubmit: (values) => {
         handleLogin(values);
       },
     });
-
 
   const handleLogin = async (values) => {
     dispatch(loginUser({ ...values }));
@@ -56,14 +57,14 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (localStorage.getItem("user")) {
-      navigate(navigate('/'));
+      navigate(navigate("/"));
     }
 
     if (isError) {
       // show snackbar
       dispatch(clearState());
     }
-  })
+  });
 
   const { vertical, horizontal, open, altMessage } = isShowSnackBar;
 
@@ -105,68 +106,82 @@ const LoginPage = () => {
               width: "70%",
             }}
           >
-            <Typography component="h1" variant="h5">
-              Login
-            </Typography>
-            <Box component="form" onSubmit={handleSubmit} noValidate>
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                id="email"
-                label="Email Address"
-                name="email"
-                autoComplete="email"
-                autoFocus
-                value={values.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.email && errors.email && true}
-                helperText={touched.email && errors.email}
-              />
-              <TextField
-                margin="normal"
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-                value={values.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.password && errors.password && true  }
-                helperText={touched.password && errors.password}
-              />
-              <Grid container />
-              <Box sx={{ mt: 2 }}>
-
-                { isLoading ? <CircularProgress/> :
-                  <Button
-                  disableElevation
-                  fullWidth
-                  size="large"
-                  type="submit"
-                  variant="contained"
-                >
-                  Login
-                </Button>
-              }
-              </Box>
-            </Box>
-            <Grid container justifyContent="center" sx={{ mt: 2 }}>
-              <Typography
-                sx={{
-                  display: "inline-block",
-                }}
-              >
-                Don't have an account?
+            <Paper
+              elevation={3}
+              style={{
+                padding: "20px",
+                background: "#fbfbfb",
+                border: "1px solid #ccc",
+              }}
+            >
+              <Typography component="h1" variant="h5">
+                Login
               </Typography>
-              <Link href="/sign-up" variant="body2">
-                &nbsp; Sign up
-              </Link>
-            </Grid>
+              <Box component="form" onSubmit={handleSubmit} noValidate>
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="email"
+                  label="Email"
+                  name="email"
+                  autoComplete="email"
+                  value={values.email}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.email && errors.email && true}
+                  helperText={touched.email && errors.email}
+                />
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="password"
+                  label="Password"
+                  type="password"
+                  id="password"
+                  autoComplete="current-password"
+                  value={values.password}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={touched.password && errors.password && true}
+                  helperText={touched.password && errors.password}
+                />
+                <Grid container />
+                <Box sx={{ mt: 2 }}>
+                  {isLoading ? (
+                    <CircularProgress />
+                  ) : (
+                    <Button
+                      disableElevation
+                      fullWidth
+                      size="large"
+                      type="submit"
+                      variant="contained"
+                    >
+                      Login
+                    </Button>
+                  )}
+                </Box>
+              </Box>
+              <Grid container justifyContent="center" sx={{ mt: 2 }}>
+                <Typography
+                  sx={{
+                    mr: 1,
+                  }}
+                >
+                  Don't have an account?
+                </Typography>
+
+                <Link
+                  style={{ marginTop: "2px" }}
+                  to="/sign-up"
+                  variant="body2"
+                >
+                  Sign up
+                </Link>
+              </Grid>
+            </Paper>
           </Box>
         </Grid>
       </Grid>

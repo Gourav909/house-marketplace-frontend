@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosClient from "../../config/axios";
 import { SIGN_UP } from "../../constants/apiUrls";
 
-
 const initialState = {
   data: {},
   isLoading: false,
@@ -15,11 +14,9 @@ export const signUpUser = createAsyncThunk(
   "auth/signUpUser",
   async (user, thunkAPI) => {
     try {
-      let response = await axiosClient.post(SIGN_UP, {...user});
+      let response = await axiosClient.post(SIGN_UP, { ...user });
       let data = await response.data;
       if (data) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data));
         return data;
       }
     } catch (error) {
