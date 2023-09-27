@@ -4,7 +4,6 @@ import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
 import PropTypes from "prop-types";
 
-
 const SearchBar = ({ onChangeHandler }) => (
   <>
     <TextField

@@ -2,7 +2,6 @@ import { Box, Typography, Slider, FormControl } from "@mui/material";
 import { memo } from "react";
 import PropTypes from "prop-types";
 
-
 const SliderInput = ({ label, name, value, min, max, onChange }) => (
   <FormControl sx={{ m: 1 }} fullWidth>
     <Typography id={`${name}-slider`} gutterBottom>

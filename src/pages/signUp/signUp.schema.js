@@ -1,17 +1,17 @@
-import * as Yup from "yup";
+import { string, ref, object  } from "yup";
 
-const SignUpValidationSchema = Yup.object({
-  name: Yup.string().required("Name is required"),
-  email: Yup.string()
+const SignUpValidationSchema = object({
+  name: string().required("Name is required"),
+  email: string()
     .email("Invalid email address")
     .required("Email is required"),
-  password: Yup.string().required("Password is required")
+  password: string().required("Password is required")
   .matches(
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/,
     "Must Contain 8 Characters, One Uppercase, One Lowercase, One Number and One Special Case Character"
   ),
-  password_confirmation: Yup.string()
-    .oneOf([Yup.ref("password"), null], "Passwords must match")
+  password_confirmation: string()
+    .oneOf([ref("password"), null], "Passwords must match")
     .required("Confirm Password is required"),
 });
 

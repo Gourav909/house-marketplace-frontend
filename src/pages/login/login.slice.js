@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axiosClient from "../../config/axios";
-import { LOGIN } from "../../constants/apiUrls";
-
+import axiosClient from "src/config/axios";
+import { getHeaders } from "src/config/headers";
+import { LOGIN } from "src/constants/apiUrls";
+import { showErrorMessage } from "src/utils/errorHandler";
 
 const initialState = {
   data: {},
@@ -15,14 +16,31 @@ export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (user, thunkAPI) => {
     try {
-      let response = await axiosClient.post(LOGIN, {...user});
-      let data = await response.data;
+      const { headers: requestHeaders } = getHeaders();
+      let response = await axiosClient.post(
+        LOGIN,
+        { ...user },
+        { headers: requestHeaders }
+      );
+      const { headers: responseHeaders, data } = response;
+      const userType = data?.data.type;
+
       if (data) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data));
+        localStorage.setItem(
+          "currentUser",
+          btoa(
+            JSON.stringify({
+              "access-token": responseHeaders["access-token"],
+              client: responseHeaders["client"],
+              uid: responseHeaders["uid"],
+              userType: userType,
+            })
+          )
+        );
         return data;
       }
     } catch (error) {
+      showErrorMessage(error);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -48,7 +66,7 @@ export const loginSlice = createSlice({
       state.isLoading = false;
       state.isError = true;
       state.isSuccess = false;
-      state.error = action.payload.error;
+      state.error = action.payload.errors[0];
     });
   },
 });

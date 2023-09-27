@@ -8,13 +8,11 @@ import {
   Typography,
   Grid,
   Box,
-  Snackbar,
-  Alert,
   CircularProgress,
   Paper,
 } from "@mui/material";
 
-import SignUpImage from "../../assets/signup.svg";
+import SignUpImage from "src/assets/signup.svg";
 import SignUpValidationSchema from "./signUp.schema";
 import { signUpUser, clearState } from "./signUp.slice";
 import { SIGN_UP_FIELDS } from "./constants";
@@ -26,13 +24,6 @@ const SignUp = () => {
   const { isSuccess, isError, error, isLoading } = useSelector(
     (state) => state.signUp
   );
-
-  const [isShowSnackBar, setIsShowSnackBar] = useState({
-    open: false,
-    vertical: "top",
-    horizontal: "right",
-    altMessage: "",
-  });
 
   const formik = useFormik({
     initialValues: {
@@ -48,15 +39,6 @@ const SignUp = () => {
       dispatch(signUpUser(values));
     },
   });
-
-  const handleClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setIsShowSnackBar((prevState) => ({ ...prevState, open: false }));
-  };
-
-  const { vertical, horizontal, open, altMessage } = isShowSnackBar;
 
   return (
     <Grid container spacing={2}>
@@ -81,21 +63,6 @@ const SignUp = () => {
             width: "70%",
           }}
         >
-          <Snackbar
-            anchorOrigin={{ vertical, horizontal }}
-            key={vertical + horizontal}
-            open={open}
-            autoHideDuration={6000}
-            onClose={handleClose}
-          >
-            <Alert
-              onClose={handleClose}
-              severity="error"
-              sx={{ width: "100%" }}
-            >
-              {altMessage}
-            </Alert>
-          </Snackbar>
           <Paper
             elevation={3}
             style={{

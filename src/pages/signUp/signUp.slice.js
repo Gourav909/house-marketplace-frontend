@@ -1,6 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axiosClient from "../../config/axios";
-import { SIGN_UP } from "../../constants/apiUrls";
+import { toast } from 'react-toastify';
+
+import axiosClient from "src/config/axios";
+import { SIGN_UP } from "src/constants/apiUrls";
+import { showErrorMessage } from "src/utils/errorHandler";
 
 const initialState = {
   data: {},
@@ -20,6 +23,7 @@ export const signUpUser = createAsyncThunk(
         return data;
       }
     } catch (error) {
+      showErrorMessage(error);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
