@@ -49,7 +49,7 @@ const currentUserSlice = createSlice({
         state.fetching = false;
         state.isError = true;
         state.isSuccess = false;
-        state.error = action.payload.error[0];
+        state.error = action.payload.errors[0];
       });
   },
 });

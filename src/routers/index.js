@@ -1,14 +1,16 @@
 import React from "react";
 import { createBrowserRouter, Outlet } from "react-router-dom";
 
-import DashboardPage from "src/pages/dashboard/dashboard";
+import DashboardPage from "src/pages/dashboard/DashboardPage";
 import FavouritePropertiesPage from "src/pages/favouriteProperties/favouriteProperties";
-import Header from "src/components/NavBar/NavBar";
+import NavBar from "src/components/NavBar/NavBar";
 import LoginPage from "src/pages/login/Login";
 import SignUp from "src/pages/signUp/SignUp";
 import PropertyDetailPage from "src/pages/PropertyDetail/PropertyDetailPage";
 import PropertyForm from "src/components/admin/PropertyForm";
 import * as ROUTES from "src/constants/routes";
+import ProtectedRoute from "./ProtectedRoutes";
+import Forbidden from "src/pages/forbidden/Forbidden";
 
 const PublicLayout = () => {
   // for all the public routes
@@ -23,7 +25,7 @@ const PrivateLayout = () => {
   // for all the private routes and header
   return (
     <>
-      <Header />
+      <NavBar />
       <Outlet />
     </>
   );
@@ -41,6 +43,10 @@ const router = createBrowserRouter([
         path: ROUTES.SIGN_UP,
         element: <SignUp />,
       },
+      {
+        path: ROUTES.FORBIDDEN,
+        element: <Forbidden />,
+      },
     ],
   },
   {
@@ -48,23 +54,43 @@ const router = createBrowserRouter([
     children: [
       {
         path: ROUTES.DASHBOARD,
-        element: <DashboardPage />,
+        element: (
+          <ProtectedRoute allowedRoles={["Admin", "User"]}>
+            <DashboardPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: ROUTES.MY_FAVOURITES,
-        element: <FavouritePropertiesPage />,
+        element: (
+          <ProtectedRoute allowedRoles={["User"]}>
+            <FavouritePropertiesPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: ROUTES.PROPERTY_DETAILS,
-        element: <PropertyDetailPage />,
+        element: (
+          <ProtectedRoute allowedRoles={["User"]}>
+            <PropertyDetailPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: ROUTES.EDIT_PROPERTIES,
-        element: <PropertyForm isEdit={true} />,
+        element: (
+          <ProtectedRoute allowedRoles={["Admin"]}>
+            <PropertyForm isEdit={true} />,
+          </ProtectedRoute>
+        ),
       },
       {
         path: ROUTES.ADD_NEW_PROPERTY,
-        element: <PropertyForm isEdit={false} />,
+        element: (
+          <ProtectedRoute allowedRoles={["Admin"]}>
+            <PropertyForm isEdit={false} />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

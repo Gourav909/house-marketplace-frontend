@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -22,11 +22,12 @@ import {
   updatePropertyById,
   addProperty,
 } from "./propertyForm.slice";
+import * as ROUTES from "src/constants/routes";
 import { flattenNestedObject } from "src/utils/flattenObject";
 import { propertyValidationSchema, initialValues } from "./schema";
 import { FORM_DATA_KEYS } from "src/utils/constants";
 import { fetchCities } from "src/utils/cities.slice";
-import { useNavigate } from "react-router-dom";
+
 import styled from "@emotion/styled";
 
 const PaperComponent = styled(Paper)(({ theme }) => ({
@@ -84,10 +85,14 @@ const PropertyForm = ({ isEdit }) => {
       );
       formData.append("image", image_url);
       if (!isEdit) {
-        dispatch(addProperty(formData));
+        dispatch(addProperty(formData)).then(() => {
+          navigate(ROUTES.DASHBOARD);
+        });
       } else {
         const updateData = { id: params.id, formData };
-        dispatch(updatePropertyById(updateData));
+        dispatch(updatePropertyById(updateData)).then(() => {
+          navigate(ROUTES.DASHBOARD);
+        });
       }
       if (isSuccess) {
         navigate("/");

@@ -7,9 +7,10 @@ import {
   Select,
   Checkbox,
   ListItemText,
+  Box,
+  Chip,
 } from "@mui/material";
 import PropTypes from "prop-types";
-
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -23,7 +24,14 @@ const MenuProps = {
   },
 };
 
-const SelectInput = ({ label, name, value, options, multiple, onChange }) => {
+const SelectInput = ({
+  label,
+  name,
+  value,
+  options,
+  multiple = false,
+  onChange,
+}) => {
   const handleChange = (event) => {
     onChange(event);
   };
@@ -38,25 +46,45 @@ const SelectInput = ({ label, name, value, options, multiple, onChange }) => {
         onChange={handleChange}
         multiple={multiple}
         input={multiple ? <OutlinedInput label={label} /> : undefined}
-        renderValue={(selected) => (multiple ? selected.join(", ") : selected)}
+        renderValue={(selected) =>
+          multiple ? (
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+              {selected.map((roleId) => (
+                <Chip
+                  key={roleId}
+                  label={options?.find((e) => e.id === roleId).name}
+                />
+              ))}
+            </Box>
+          ) : (
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+              <Chip
+                key={selected}
+                label={options.find((e) => e.id === selected).name}
+              />
+            </Box>
+          )
+        }
         MenuProps={MenuProps}
       >
         {multiple
-          ? options.map((name) => (
-              <MenuItem key={name} value={name} >
-                <Checkbox  data-testid="multiple-checkbox" checked={value.indexOf(name) > -1} />
-                <ListItemText primary={name} />
+          ? options?.map((item) => (
+              <MenuItem key={item.id} value={item.id}>
+                <Checkbox
+                  data-testid="multiple-checkbox"
+                  checked={value?.includes(item.id)}
+                />
+                <ListItemText primary={item.name} />
               </MenuItem>
             ))
-          : options.map((item) => (
-              <MenuItem key={item.value} value={item.value}>
-                {item.label}
+          : options?.map((item) => (
+              <MenuItem key={item.id} value={item.id}>
+                {item.name}
               </MenuItem>
             ))}
       </Select>
     </FormControl>
   );
-  
 };
 
 SelectInput.propTypes = {
@@ -66,10 +94,10 @@ SelectInput.propTypes = {
   multiple: PropTypes.arrayOf(
     PropTypes.shape({
       value: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired
+      name: PropTypes.string.isRequired,
     }).isRequired
   ).isRequired,
-  options:  PropTypes.arrayOf(
+  options: PropTypes.arrayOf(
     PropTypes.shape({
       value: PropTypes.string.isRequired,
     }).isRequired

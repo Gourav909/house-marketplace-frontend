@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 import axiosClient from "src/config/axios";
 import { SIGN_UP } from "src/constants/apiUrls";
@@ -49,7 +49,7 @@ export const signUpSlice = createSlice({
       state.isLoading = false;
       state.isError = true;
       state.isSuccess = false;
-      state.error = action.payload.error;
+      state.error = action.payload.error[0];
     });
   },
 });

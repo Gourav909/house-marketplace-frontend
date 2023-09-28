@@ -20,7 +20,6 @@ export const addProperty = createAsyncThunk(
   async (propertyData, thunkAPI) => {
     try {
       const { headers } = getHeaders(true);
-
       const response = await axiosClient.post(PROPERTIES, propertyData, {
         headers: headers,
       });
@@ -76,8 +75,15 @@ export const deletePropertyById = createAsyncThunk(
   "admin/deletePropertyById",
   async (id, thunkAPI) => {
     try {
-      await axiosClient.delete(`${PROPERTIES}/${id}`);
-      return id;
+      const { headers } = getHeaders();
+
+      const response = await axiosClient.delete(`${PROPERTIES}/${id}`, {
+        headers: headers,
+      });
+
+      const success = await response.data.success;
+      toast.success(response.data.data.message);
+      return success;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response.data);
     }
@@ -87,26 +93,7 @@ export const deletePropertyById = createAsyncThunk(
 const propertySlice = createSlice({
   name: "property",
   initialState,
-  reducers: {
-    addPropertyLocally: (state, action) => {
-      state.data.push(action.payload);
-    },
-
-    updatePropertyLocally: (state, action) => {
-      const updatedProperty = action.payload;
-      const index = state.data.findIndex(
-        (property) => property.id === updatedProperty.id
-      );
-      if (index !== -1) {
-        state.data[index] = updatedProperty;
-      }
-    },
-
-    deletePropertyLocally: (state, action) => {
-      const idToDelete = action.payload;
-      state.data = state.data.filter((property) => property.id !== idToDelete);
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       //handle fetchPropertyById
@@ -137,7 +124,6 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.isError = false;
         state.isSuccess = true;
-        addPropertyLocally(state, action);
       })
       .addCase(addProperty.rejected, (state, action) => {
         state.isLoading = false;
@@ -155,7 +141,6 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.isError = false;
         state.isSuccess = true;
-        updatePropertyLocally(state, action);
       })
       .addCase(updatePropertyById.rejected, (state, action) => {
         state.isLoading = false;
@@ -173,7 +158,6 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.isError = false;
         state.isSuccess = true;
-        deletePropertyLocally(state, action);
       })
       .addCase(deletePropertyById.rejected, (state, action) => {
         state.isLoading = false;
@@ -183,11 +167,5 @@ const propertySlice = createSlice({
       });
   },
 });
-
-export const {
-  addPropertyLocally,
-  updatePropertyLocally,
-  deletePropertyLocally,
-} = propertySlice.actions;
 
 export default propertySlice.reducer;

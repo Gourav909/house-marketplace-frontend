@@ -1,16 +1,17 @@
 import React from "react";
 import IconButton from "@mui/material/IconButton";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import PropTypes from "prop-types";
+import propTypes from "prop-types";
 
-const FavoriteProperty = ({ isFavorite, toggleFavorite }) => {
+const FavoriteProperty = ({ isFavorite, onClick }) => {
   return (
     <IconButton
       sx={{
         position: "absolute",
         zIndex: 1,
+        right: "4%",
       }}
-      onClick={toggleFavorite}
+      onClick={onClick}
     >
       <FavoriteIcon
         sx={{
@@ -22,9 +23,9 @@ const FavoriteProperty = ({ isFavorite, toggleFavorite }) => {
   );
 };
 
-FavoriteProperty.PropTypes = {
-  toggleFavorite: PropTypes.func.isRequired,
-  isFavorite: PropTypes.bool.isRequired,
+FavoriteProperty.propTypes = {
+  onClick: propTypes.func.isRequired,
+  isFavorite: propTypes.bool.isRequired,
 };
 
 export default FavoriteProperty;

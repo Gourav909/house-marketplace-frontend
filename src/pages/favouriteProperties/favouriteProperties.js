@@ -1,16 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import Dashboard from "src/components/Dashboard/Dashboard";
-import useFetchFavouriteProperites from './hooks/useFetchFavouriteProperites';
+import { fetchFavoriteProperties } from "../favoriteProperty/Favorite.slice";
 
 const FavouritePropertiesPage = () => {
-  const { favouriteProperties, loading } = useFetchFavouriteProperites();
+  const { data, paginationData, isLoading } = useSelector(
+    (state) => state.favoriteProperties
+  );
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchFavoriteProperties());
+  }, []);
 
   return (
     <Dashboard
-      properties={favouriteProperties}
-      favourites={true}
-      loading={loading}
+      properties={data}
+      paginationData={paginationData}
+      fetching={isLoading}
+      isFav={true}
     />
   );
 };

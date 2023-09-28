@@ -5,6 +5,7 @@ const SIGN_UP = "/sign-up";
 const PROPERTY_DETAILS = "/user/property-details/:id";
 const EDIT_PROPERTIES = "/admin/edit-properties/:id";
 const ADD_NEW_PROPERTY = "/admin/add-new-property";
+const FORBIDDEN = "/forbidden";
 
 export {
   LOGIN,
@@ -14,4 +15,5 @@ export {
   ADD_NEW_PROPERTY,
   MY_FAVOURITES,
   DASHBOARD,
+  FORBIDDEN,
 };

@@ -1,9 +1,11 @@
 import React from "react";
-import { AppBar, Toolbar, Button } from "@mui/material";
 import { NavLink as NavLinkBase } from "react-router-dom";
-import { clearState } from "../../pages/login/login.slice";
 import { useDispatch } from "react-redux";
+import { AppBar, Toolbar, Button } from "@mui/material";
 import { styled } from "@mui/system";
+
+import { clearState } from "../../pages/login/login.slice";
+import useUserType from "src/hooks/useUserType";
 
 const NavLink = styled((props) => (
   <NavLinkBase {...props} end={props.to === "/"} />
@@ -20,6 +22,7 @@ const NavLink = styled((props) => (
 
 const NavBar = () => {
   const dispatch = useDispatch();
+  const isAdmin = useUserType();
 
   const handleLogOut = () => {
     localStorage.removeItem("currentUser");
@@ -32,10 +35,11 @@ const NavBar = () => {
         <NavLink to="/dashboard" variant="body2">
           <Button color="inherit">Dashboard</Button>
         </NavLink>
-
-        <NavLink to="/my-favourites" variant="body2">
-          <Button color="inherit"> My Favourites</Button>
-        </NavLink>
+        {!isAdmin && (
+          <NavLink to="/my-favourites" variant="body2">
+            <Button color="inherit"> My Favourites</Button>
+          </NavLink>
+        )}
 
         <NavLink to="/" onClick={handleLogOut}>
           <Button color="inherit">Log out</Button>
