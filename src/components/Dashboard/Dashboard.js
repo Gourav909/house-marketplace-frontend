@@ -1,4 +1,5 @@
-import React, { memo, useState, useCallback, useMemo } from "react";
+import React, { memo, useMemo } from "react";
+import { useDispatch } from "react-redux";
 import {
   Grid,
   Container,
@@ -11,8 +12,8 @@ import {
 import Property from "src/components/Property/Property";
 import DashboardHeader from "./DashboardHeader";
 
-import { useDispatch } from "react-redux";
 import { fetchProperties } from "./dashboard.slice";
+import { fetchFavoriteProperties } from "src/pages/favouriteProperties/Favorite.slice";
 
 const Dashboard = ({
   isAdmin = false,
@@ -21,16 +22,16 @@ const Dashboard = ({
   properties,
   paginationData,
   fetching,
-  isFav = false,
+  fromFavoritePage = false,
 }) => {
   const dispatch = useDispatch();
   const { total_pages } = paginationData || {};
 
-  const handlePageChange = useCallback((_, value) => {
-    dispatch(fetchProperties(`page=${value}`));
-    localStorage.setItem("currentPage", value);
+  const handlePageChange = (_, value) => {
+    const query = { currentPage: value, query: "" };
+    dispatch(fromFavoritePage ? fetchFavoriteProperties(value) : fetchProperties(query));
     setCurrentPage(value);
-  }, []);
+  };
 
   const renderCardUI = useMemo(() => {
     if (properties?.length > 0) {
@@ -39,12 +40,12 @@ const Dashboard = ({
           {properties.map((property, index, arr) => (
             <Grid item key={index} xs={12} sm={6} md={4} lg={4} mb={4}>
               <Property
-                arr={arr}
+                currentPageProperties={arr}
                 currentPage={currentPage}
                 propertyDetail={property}
                 isAdmin={isAdmin}
                 setCurrentPage={setCurrentPage}
-                isFav={isFav}
+                fromFavoritePage={fromFavoritePage}
               />
             </Grid>
           ))}
@@ -53,15 +54,18 @@ const Dashboard = ({
     } else {
       return <h2>No records found</h2>;
     }
+    // eslint-disable-next-line
   }, [properties, isAdmin]);
 
   return (
     <Container>
-      <DashboardHeader
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        isAdmin={isAdmin}
-      />
+      {!fromFavoritePage && (
+        <DashboardHeader
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          isAdmin={isAdmin}
+        />
+      )}
       <Grid
         container
         style={{
@@ -91,9 +95,7 @@ const Dashboard = ({
               count={total_pages}
               page={currentPage}
               color="primary"
-              onChange={(event, value) => {
-                handlePageChange(event, value);
-              }}
+              onChange={(event, value) => handlePageChange(event, value)}
             />
           </Stack>
         )}

@@ -6,10 +6,7 @@ import { fetchProperties } from "src/components/Dashboard/dashboard.slice";
 import useUserType from "src/hooks/useUserType";
 
 const DashboardPage = () => {
-  const [currentPage, setCurrentPage] = useState(() => {
-    const storedPage = localStorage.getItem("currentPage");
-    return parseInt(storedPage) || 1;
-  });
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { properties, paginationData, fetching } = useSelector(
     (state) => state.properties
@@ -19,8 +16,9 @@ const DashboardPage = () => {
   const isAdmin = useUserType();
 
   useEffect(() => {
-    const queryParams = `page=${currentPage || 1}`;
+    const queryParams = { currentPage: currentPage, query: "" };
     dispatch(fetchProperties(queryParams));
+    // eslint-disable-next-line
   }, []);
 
   return (

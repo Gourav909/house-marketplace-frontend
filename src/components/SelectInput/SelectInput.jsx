@@ -31,6 +31,7 @@ const SelectInput = ({
   options,
   multiple = false,
   onChange,
+  dataTestId,
 }) => {
   const handleChange = (event) => {
     onChange(event);
@@ -40,9 +41,10 @@ const SelectInput = ({
     <FormControl sx={{ m: 1 }} fullWidth>
       <InputLabel data-testid="input-label">{label}</InputLabel>
       <Select
-        label={label}
-        value={value}
+        label={label || ""}
+        value={value || ""}
         name={name}
+        data-testid= {dataTestId}
         onChange={handleChange}
         multiple={multiple}
         input={multiple ? <OutlinedInput label={label} /> : undefined}
@@ -88,20 +90,15 @@ const SelectInput = ({
 };
 
 SelectInput.propTypes = {
-  label: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
-  value: PropTypes.string.isRequired,
-  multiple: PropTypes.arrayOf(
-    PropTypes.shape({
-      value: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }).isRequired
-  ).isRequired,
+  label: PropTypes.string,
+  name: PropTypes.string,
+  value: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
   options: PropTypes.arrayOf(
     PropTypes.shape({
-      value: PropTypes.string.isRequired,
-    }).isRequired
-  ).isRequired,
+      value: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
+    })
+  ),
+  multiple: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
 };
 

@@ -3,6 +3,12 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosClient from "src/config/axios";
 import { getHeaders } from "src/config/headers";
 import { PROPERTIES } from "src/constants/apiUrls";
+import { showErrorMessage, getErrorMessage } from "src/utils/errorHandler";
+import {
+  fulfilledState,
+  pendingState,
+  rejectedState,
+} from "src/utils/commonSlices/mockSlice";
 
 const initialState = {
   properties: [],
@@ -10,13 +16,21 @@ const initialState = {
   fetching: false,
   isSuccess: false,
   isError: false,
-  error: null,
+  error: [],
 };
 
 export const fetchProperties = createAsyncThunk(
   "/fetchProperties",
   async (data, thunkAPI) => {
-    let route = data ? `${PROPERTIES}?${data}` : PROPERTIES;
+    let route;
+    const queryParams = `page=${data.currentPage}&search=${data.query}`;
+    const queryData = data.query.length;
+    const filterUrl = data.filter;
+    if (filterUrl || queryData === 0) {
+      route = `${PROPERTIES}?${filterUrl || `page=${data.currentPage}`}`;
+    } else {
+      route = `${PROPERTIES}?${queryParams}`;
+    }
 
     try {
       const { headers } = getHeaders();
@@ -26,6 +40,7 @@ export const fetchProperties = createAsyncThunk(
       const properties = await response.data;
       return properties;
     } catch (error) {
+      showErrorMessage(error.response.data);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -48,14 +63,10 @@ const propertiesSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchProperties.pending, (state) => {
-        state.fetching = true;
-        state.isError = false;
-        state.isSuccess = false;
+        pendingState(state);
       })
       .addCase(fetchProperties.fulfilled, (state, action) => {
-        state.fetching = false;
-        state.isError = false;
-        state.isSuccess = true;
+        fulfilledState(state);
         state.properties = action.payload.data.properties;
         state.paginationData = action.payload.meta;
       })
@@ -63,7 +74,8 @@ const propertiesSlice = createSlice({
         state.fetching = false;
         state.isError = true;
         state.isSuccess = false;
-        // state.error = action.payload.error[0];
+        state.error = getErrorMessage(action.payload);
+        rejectedState(state, action);
       });
   },
 });

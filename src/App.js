@@ -1,12 +1,14 @@
 import React, { useEffect } from "react";
 import { RouterProvider } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+
 import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+
 import router from "./routers";
-import { useDispatch } from "react-redux";
-import { getCurrentUser } from "./utils/currentUser.slice";
+import { getCurrentUser } from "src/utils/commonSlices/currentUser.slice";
 
 function App() {
   const theme = createTheme();

@@ -1,24 +1,22 @@
 import React from "react";
+import PropTypes from "prop-types";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
-import PropTypes from "prop-types";
 
 const SearchBar = ({ onChangeHandler }) => (
   <>
     <TextField
       type="search"
       id="search-bar"
-      label="Search any task"
+      data-testid="searchBar"
       variant="outlined"
-      placeholder="Search tasks..."
-      sx={{
-        width: "100%",
-      }}
+      placeholder="Search Properties..."
+      sx={{width: "100%"}}
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
-            <SearchIcon />
+            <SearchIcon data-testid="searchIcon"/>
           </InputAdornment>
         ),
       }}

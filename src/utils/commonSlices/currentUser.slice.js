@@ -3,7 +3,12 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getHeaders } from "src/config/headers";
 import axiosClient from "src/config/axios";
 import { CURRENT_USER } from "src/constants/apiUrls";
-
+import { showErrorMessage } from "src/utils/errorHandler";
+import {
+  fulfilledState,
+  pendingState,
+  rejectedState,
+} from "src/utils/commonSlices/mockSlice";
 const initialState = {
   currentUserDetails: {},
   fetching: false,
@@ -23,6 +28,7 @@ export const getCurrentUser = createAsyncThunk(
       const data = await response.data;
       return data;
     } catch (error) {
+      showErrorMessage(error.response.data);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -35,21 +41,14 @@ const currentUserSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(getCurrentUser.pending, (state) => {
-        state.fetching = true;
-        state.isError = false;
-        state.isSuccess = false;
+        pendingState(state);
       })
       .addCase(getCurrentUser.fulfilled, (state, action) => {
-        state.fetching = false;
-        state.isError = false;
-        state.isSuccess = true;
+        fulfilledState(state);
         state.currentUserDetails = action.payload.data;
       })
       .addCase(getCurrentUser.rejected, (state, action) => {
-        state.fetching = false;
-        state.isError = true;
-        state.isSuccess = false;
-        state.error = action.payload.errors[0];
+        rejectedState(state, action);
       });
   },
 });

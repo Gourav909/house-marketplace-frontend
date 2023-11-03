@@ -3,7 +3,7 @@ import IconButton from "@mui/material/IconButton";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import propTypes from "prop-types";
 
-const FavoriteProperty = ({ isFavorite, onClick }) => {
+const FavoriteProperty = ({ isFavorite = false, onClick }) => {
   return (
     <IconButton
       sx={{
@@ -12,12 +12,14 @@ const FavoriteProperty = ({ isFavorite, onClick }) => {
         right: "4%",
       }}
       onClick={onClick}
+      data-testid="iconButton"
     >
       <FavoriteIcon
         sx={{
           fontSize: "1.5rem",
           fill: isFavorite ? "red" : "white",
         }}
+        data-testid="favicon"
       />
     </IconButton>
   );

@@ -1,12 +1,16 @@
 import { toast } from "react-toastify";
 
 export const showErrorMessage = (errorObj) => {
-  let errorMessage = "Some error occurred!";
-  let responseData = errorObj.response;
-  if (typeof responseData.data.errors[0] === "string") {
-    errorMessage = responseData.data.errors[0];
-  } else {
-    errorMessage = responseData.statusText;
-  }
+  const errorMessage = getErrorMessage(errorObj);
   toast.error(errorMessage);
+};
+
+export const getErrorMessage = (errorObj) => {
+  const errorMessage = "Some error occurred!";
+
+  if (typeof errorObj?.errors[0] === "string") {
+    return errorObj?.errors[0];
+  } else {
+    return errorObj?.errors?.full_messages[0] || errorMessage;
+  }
 };

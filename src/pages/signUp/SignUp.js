@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { useFormik } from "formik";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Button,
   TextField,
@@ -10,20 +10,18 @@ import {
   Box,
   CircularProgress,
   Paper,
+  useMediaQuery,
 } from "@mui/material";
 
 import SignUpImage from "src/assets/signup.svg";
 import SignUpValidationSchema from "./signUp.schema";
-import { signUpUser, clearState } from "./signUp.slice";
+import { signUpUser } from "./signUp.slice";
 import { SIGN_UP_FIELDS } from "./constants";
 
 const SignUp = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
-  const { isSuccess, isError, error, isLoading } = useSelector(
-    (state) => state.signUp
-  );
+  const { isLoading } = useSelector((state) => state.signUp);
 
   const formik = useFormik({
     initialValues: {
@@ -35,17 +33,25 @@ const SignUp = () => {
     },
     validationSchema: SignUpValidationSchema,
 
-    onSubmit: (values) => {
-      dispatch(signUpUser(values));
+    onSubmit: async (values) => {
+      await dispatch(signUpUser(values))
+        .then(() => {
+          window.location.href = "/";
+        })
+        .catch((error) => {
+          console.log("error");
+        });
     },
   });
+  const isMobile = useMediaQuery("(max-width:800px)");
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12} md={7}>
-        <img src={SignUpImage} alt="sign-up" />
-      </Grid>
-
+      {!isMobile && (
+        <Grid item xs={12} md={7}>
+          <img src={SignUpImage} alt="sign-up" />
+        </Grid>
+      )}
       <Grid
         item
         xs={12}
@@ -76,8 +82,8 @@ const SignUp = () => {
             </Typography>
             <Box component="form" onSubmit={formik.handleSubmit} sx={{ mt: 3 }}>
               <Grid container spacing={3}>
-                {Object.entries(SIGN_UP_FIELDS).map(([value, label]) => (
-                  <Grid item xs={12}>
+                {Object.entries(SIGN_UP_FIELDS).map(([value, label], key) => (
+                  <Grid key={key} item xs={12}>
                     <TextField
                       fullWidth
                       id={value}

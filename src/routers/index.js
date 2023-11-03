@@ -7,10 +7,10 @@ import NavBar from "src/components/NavBar/NavBar";
 import LoginPage from "src/pages/login/Login";
 import SignUp from "src/pages/signUp/SignUp";
 import PropertyDetailPage from "src/pages/PropertyDetail/PropertyDetailPage";
-import PropertyForm from "src/components/admin/PropertyForm";
+import PropertyForm from "src/components/PropertyForm/PropertyForm";
 import * as ROUTES from "src/constants/routes";
-import ProtectedRoute from "./ProtectedRoutes";
 import Forbidden from "src/pages/forbidden/Forbidden";
+import ProtectedRoute from "./ProtectedRoutes";
 
 const PublicLayout = () => {
   // for all the public routes

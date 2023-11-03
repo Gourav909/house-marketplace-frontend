@@ -5,13 +5,18 @@ import { getHeaders } from "src/config/headers";
 import axiosClient from "src/config/axios";
 import { PROPERTIES } from "src/constants/apiUrls";
 import { showErrorMessage } from "src/utils/errorHandler";
+import {
+  fulfilledState,
+  pendingState,
+  rejectedState,
+} from "src/utils/commonSlices/mockSlice";
 
 const initialState = {
   data: {},
   isLoading: false,
   isSuccess: false,
   isError: false,
-  error: null,
+  error: [],
   isFetching: false,
 };
 
@@ -27,7 +32,7 @@ export const addProperty = createAsyncThunk(
       toast.success("Property added successfully");
       return addedProperty;
     } catch (error) {
-      showErrorMessage(error);
+      showErrorMessage(error.response.data);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -47,7 +52,7 @@ export const updatePropertyById = createAsyncThunk(
       toast.success("Property Updated successfully");
       return editedProperty;
     } catch (error) {
-      showErrorMessage(error);
+      showErrorMessage(error.response.data);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -65,7 +70,7 @@ export const fetchPropertyById = createAsyncThunk(
       const property = await response.data;
       return property;
     } catch (error) {
-      showErrorMessage(error);
+      showErrorMessage(error.response.data);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -85,6 +90,7 @@ export const deletePropertyById = createAsyncThunk(
       toast.success(response.data.data.message);
       return success;
     } catch (error) {
+      showErrorMessage(error.response.data);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -98,72 +104,47 @@ const propertySlice = createSlice({
     builder
       //handle fetchPropertyById
       .addCase(fetchPropertyById.pending, (state) => {
-        state.isLoading = true;
-        state.isError = false;
-        state.isFetching = false;
+        pendingState(state);
       })
       .addCase(fetchPropertyById.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isError = false;
-        state.isFetching = true;
+        fulfilledState(state);
+
         state.data = action.payload.data;
       })
       .addCase(fetchPropertyById.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
-        state.isFetching = false;
-        state.error = action.payload.errors[0];
+        rejectedState(state, action);
       })
+
       //handle addProperty
       .addCase(addProperty.pending, (state) => {
-        state.isLoading = true;
-        state.isError = false;
-        state.isSuccess = false;
+        pendingState(state);
       })
       .addCase(addProperty.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isError = false;
-        state.isSuccess = true;
+        fulfilledState(state);
       })
       .addCase(addProperty.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
-        state.isSuccess = false;
-        state.error = action.payload.errors[0];
+        rejectedState(state, action);
       })
+
       //handle updatePropertyById
       .addCase(updatePropertyById.pending, (state) => {
-        state.isLoading = true;
-        state.isError = false;
-        state.isSuccess = false;
+        pendingState(state);
       })
       .addCase(updatePropertyById.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isError = false;
-        state.isSuccess = true;
+        fulfilledState(state);
       })
       .addCase(updatePropertyById.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
-        state.isSuccess = false;
-        state.error = action.payload.errors[0];
+        rejectedState(state, action);
       })
       //handle deletePropertyById
       .addCase(deletePropertyById.pending, (state) => {
-        state.isLoading = true;
-        state.isError = false;
-        state.isSuccess = false;
+        pendingState(state);
       })
       .addCase(deletePropertyById.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isError = false;
-        state.isSuccess = true;
+        fulfilledState(state);
       })
       .addCase(deletePropertyById.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
-        state.isSuccess = false;
-        state.error = action.payload.errors[0];
+        rejectedState(state, action);
       });
   },
 });

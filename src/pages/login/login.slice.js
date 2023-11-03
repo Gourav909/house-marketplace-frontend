@@ -1,8 +1,14 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+
 import axiosClient from "src/config/axios";
 import { getHeaders } from "src/config/headers";
 import { LOGIN } from "src/constants/apiUrls";
 import { showErrorMessage } from "src/utils/errorHandler";
+import {
+  fulfilledState,
+  pendingState,
+  rejectedState,
+} from "src/utils/commonSlices/mockSlice";
 
 const initialState = {
   data: {},
@@ -40,7 +46,7 @@ export const loginUser = createAsyncThunk(
         return data;
       }
     } catch (error) {
-      showErrorMessage(error);
+      showErrorMessage(error.response.data);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -54,19 +60,14 @@ export const loginSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(loginUser.pending, (state) => {
-      state.isLoading = true;
+      pendingState(state);
     });
     builder.addCase(loginUser.fulfilled, (state, action) => {
-      state.isLoading = false;
-      state.isError = false;
-      state.isSuccess = true;
+      fulfilledState(state);
       state.data = action.payload;
     });
     builder.addCase(loginUser.rejected, (state, action) => {
-      state.isLoading = false;
-      state.isError = true;
-      state.isSuccess = false;
-      state.error = action.payload.errors[0];
+      rejectedState(state, action);
     });
   },
 });

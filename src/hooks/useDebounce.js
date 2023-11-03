@@ -5,7 +5,7 @@ const useDebounce = (value) => {
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      setDebouncedValue(value);
+      setDebouncedValue(value || "");
     }, 500);
 
     return () => {

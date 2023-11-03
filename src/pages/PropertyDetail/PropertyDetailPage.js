@@ -31,8 +31,6 @@ const PropertyDetailPage = () => {
   const params = useParams();
   const { data, isLoading } = useSelector((state) => state.propertyDetail);
   const { properties } = data;
-  console.log(properties?.image);
-
   useEffect(() => {
     dispatch(fetchPropertyDetail(params.id));
   }, [dispatch, params.id]);
@@ -40,7 +38,7 @@ const PropertyDetailPage = () => {
   return (
     <div>
       {isLoading ? (
-        <div style={styles.loaderContainer}>
+        <div style={styles.loaderContainer} data-testid="loading-spinner">
           <CircularProgress />
         </div>
       ) : (
@@ -52,7 +50,7 @@ const PropertyDetailPage = () => {
             <Grid item xs={12} md={7} sx={styles.gridItemLeft}>
               <img
                 src={`http://localhost:3000/${properties?.image_url}`}
-                alt="Property Image"
+                alt="Property"
                 style={{
                   height: "25%",
                 }}

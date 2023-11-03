@@ -15,7 +15,9 @@ import {
   MenuItem,
   Paper,
   Box,
+  FormHelperText,
 } from "@mui/material";
+import styled from "@emotion/styled";
 
 import {
   fetchPropertyById,
@@ -24,11 +26,9 @@ import {
 } from "./propertyForm.slice";
 import * as ROUTES from "src/constants/routes";
 import { flattenNestedObject } from "src/utils/flattenObject";
-import { propertyValidationSchema, initialValues } from "./schema";
+import { propertyValidationSchema, initialValues } from "./propertyForm.schema";
 import { FORM_DATA_KEYS } from "src/utils/constants";
-import { fetchCities } from "src/utils/cities.slice";
-
-import styled from "@emotion/styled";
+import { fetchCities } from "src/utils/commonSlices/cities.slice";
 
 const PaperComponent = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -36,55 +36,62 @@ const PaperComponent = styled(Paper)(({ theme }) => ({
   border: "1px solid #ccc",
 }));
 
-const PropertyForm = ({ isEdit }) => {
+const PropertyForm = ({ isEdit = false }) => {
   const params = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
+  const [cityOptions, setCityOptions] = useState([]);
+  const [districtOptions, setDistrictOptions] = useState([]);
+
   const { citiesData } = useSelector((state) => state.cities);
+
+  // get data of selected property
   const { data, isSuccess, isFetching } = useSelector((state) => {
     return state.property;
   });
-
-  const { properties } = data;
-  const [cityOptions, setCityOptions] = useState([]);
-  const [districtOptions, setDistrictOptions] = useState([]);
+  const { properties: propertyToEdit } = data;
 
   useEffect(() => {
     if (isEdit) {
       dispatch(fetchPropertyById(params.id));
     }
+  // eslint-disable-next-line
   }, [params.id]);
+
+  useEffect(() => {
+    if (!isFetching && isSuccess && isEdit) {
+      populatePropertyForm(propertyToEdit);
+    }
+  // eslint-disable-next-line
+  }, [isFetching, isSuccess, isEdit]);
 
   useEffect(() => {
     if (cityOptions.length === 0) {
       dispatch(fetchCities());
     }
+  // eslint-disable-next-line
   }, []);
-
-  useEffect(() => {
-    if (isFetching) {
-      handleFormikValues(properties);
-    }
-  }, [isFetching]);
 
   useEffect(() => {
     setCityOptions(citiesData.cities);
   }, [citiesData]);
+
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: propertyValidationSchema,
     onSubmit: (values) => {
       const { image_url } = values;
-
       const flattenedObject = flattenNestedObject(values);
       const formData = new FormData();
+
       Object.entries(FORM_DATA_KEYS).forEach(([key, val]) =>
         formData.append(key, flattenedObject[val])
       );
-      formData.append("image", image_url);
+
       if (!isEdit) {
+        formData.append("image", image_url);
         dispatch(addProperty(formData)).then(() => {
           navigate(ROUTES.DASHBOARD);
         });
@@ -93,9 +100,6 @@ const PropertyForm = ({ isEdit }) => {
         dispatch(updatePropertyById(updateData)).then(() => {
           navigate(ROUTES.DASHBOARD);
         });
-      }
-      if (isSuccess) {
-        navigate("/");
       }
     },
   });
@@ -113,26 +117,26 @@ const PropertyForm = ({ isEdit }) => {
     setFieldValue,
   } = formik;
 
-  const handleFormikValues = (data) => {
+  const populatePropertyForm = (data) => {
     setValues({
-      title: data.title,
-      price_per_month: data.price_per_month,
-      net_size: data.net_size,
-      no_of_rooms: data.no_of_rooms,
-      property_type: data.property_type,
-      description: data.description,
+      title: data?.title,
+      price_per_month: data?.price_per_month,
+      net_size: data?.net_size,
+      no_of_rooms: data?.no_of_rooms,
+      property_type: data?.property_type,
+      description: data?.description,
       address_attributes: {
-        city_id: data.address?.city_id,
-        district_id: data.address?.district_id,
+        city_id: data?.address?.city_id,
+        district_id: data?.address?.district_id,
       },
-      image_url: data.image,
-      mrt: data.mrt,
+      image_url: data?.image_url && `${process.env.REACT_APP_BASE_URL}${data?.image_url}`,
+      mrt: data?.mrt,
     });
   };
 
   const handleImageUpload = (e) => {
-    const imageLink = e.target.files[0];
-    setFieldValue("image_url", imageLink);
+    const file = e.target.files[0];
+    setFieldValue("image_url", file);
   };
 
   const handleDistrictOptions = (e) => {
@@ -179,7 +183,7 @@ const PropertyForm = ({ isEdit }) => {
                   value={values.title}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={touched.title && errors.title}
+                  error={Boolean(touched.title && errors.title)}
                   helperText={touched.title && errors.title}
                 />
               </Grid>
@@ -193,12 +197,17 @@ const PropertyForm = ({ isEdit }) => {
                     value={values.property_type}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    error={touched.property_type && errors.property_type}
-                    helperText={touched.property_type && errors.property_type}
+                    error={Boolean(
+                      touched.property_type && errors.property_type
+                    )}
+                    data-testid="propertyType"
                   >
                     <MenuItem value="residential">Residential</MenuItem>
                     <MenuItem value="retail">Retail</MenuItem>
                   </Select>
+                  <FormHelperText>
+                    {touched.property_type && errors.property_type}
+                  </FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
@@ -211,7 +220,9 @@ const PropertyForm = ({ isEdit }) => {
                   value={values.price_per_month}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={touched.price_per_month && errors.price_per_month}
+                  error={Boolean(
+                    touched.price_per_month && errors.price_per_month
+                  )}
                   helperText={touched.price_per_month && errors.price_per_month}
                 />
               </Grid>
@@ -225,7 +236,7 @@ const PropertyForm = ({ isEdit }) => {
                   value={values.net_size}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={touched.net_size && errors.net_size}
+                  error={Boolean(touched.net_size && errors.net_size)}
                   helperText={touched.net_size && errors.net_size}
                 />
               </Grid>
@@ -237,7 +248,7 @@ const PropertyForm = ({ isEdit }) => {
                   label="Number of Rooms"
                   variant="outlined"
                   value={values.no_of_rooms}
-                  error={touched.no_of_rooms && errors.no_of_rooms}
+                  error={Boolean(touched.no_of_rooms && errors.no_of_rooms)}
                   helperText={touched.no_of_rooms && errors.no_of_rooms}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -255,7 +266,7 @@ const PropertyForm = ({ isEdit }) => {
                   value={values.description}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={touched.description && errors.description}
+                  error={Boolean(touched.description && errors.description)}
                   helperText={touched.description && errors.description}
                 />
               </Grid>
@@ -271,7 +282,7 @@ const PropertyForm = ({ isEdit }) => {
                   value={values.mrt}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  error={touched.mrt && errors.mrt}
+                  error={Boolean(touched.mrt && errors.mrt)}
                   helperText={touched.mrt && errors.mrt}
                 />
               </Grid>
@@ -285,14 +296,11 @@ const PropertyForm = ({ isEdit }) => {
                     value={values.address_attributes?.city_id}
                     onChange={handleDistrictOptions}
                     onBlur={handleBlur}
-                    error={
+                    error={Boolean(
                       touched.address_attributes?.city_id &&
-                      errors.address_attributes?.city_id
-                    }
-                    helperText={
-                      touched.address_attribute?.city_id &&
-                      errors.address_attributes?.city_id
-                    }
+                        errors.address_attributes?.city_id
+                    )}
+                    data-testid="city"
                   >
                     {cityOptions?.map((item) => (
                       <MenuItem key={item.id} value={item.id}>
@@ -300,6 +308,10 @@ const PropertyForm = ({ isEdit }) => {
                       </MenuItem>
                     ))}
                   </Select>
+                  <FormHelperText sx={{color: "#d32f2f"}} >
+                    {touched.address_attributes?.city_id &&
+                      errors.address_attributes?.city_id}
+                  </FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
@@ -314,14 +326,12 @@ const PropertyForm = ({ isEdit }) => {
                     value={values.address_attributes?.district_id}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    error={
+                    disabled={!values.address_attributes?.city_id}
+                    error={Boolean(
                       touched.address_attributes?.district_id &&
-                      errors.address_attributes?.district_id
-                    }
-                    helperText={
-                      touched.address_attributes?.district_id &&
-                      errors.address_attributes?.district_id
-                    }
+                        errors.address_attributes?.district_id
+                    )}
+                    data-testid="district"
                   >
                     {districtOptions.map((item) => (
                       <MenuItem key={item.id} value={item.id}>
@@ -329,17 +339,27 @@ const PropertyForm = ({ isEdit }) => {
                       </MenuItem>
                     ))}
                   </Select>
+                  <FormHelperText sx={{color: "#d32f2f"}}>
+                    {touched.address_attributes?.district_id &&
+                      errors.address_attributes?.district_id}
+                  </FormHelperText>
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
-                <input
-                  type="file"
-                  id="image_url"
-                  name="image_url"
-                  ref={fileInputRef}
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
+                { isEdit && values?.image_url ?
+                  <Box mt={2} textAlign="center">
+                    <img src={values?.image_url} alt="property" height="100px" />
+                  </Box> :
+                  <input
+                    type="file"
+                    id="image_url"
+                    name="image_url"
+                    data-testid="imageUrl"
+                    ref={fileInputRef}
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
+                }
               </Grid>
             </Grid>
             <Button

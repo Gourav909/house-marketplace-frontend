@@ -2,6 +2,12 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosClient from "src/config/axios";
 import { getHeaders } from "src/config/headers";
 import { FAVOURITE_PROPERTIES } from "src/constants/apiUrls";
+import { showErrorMessage } from "src/utils/errorHandler";
+import {
+  fulfilledState,
+  pendingState,
+  rejectedState,
+} from "src/utils/commonSlices/mockSlice";
 
 const initialState = {
   data: [],
@@ -9,20 +15,22 @@ const initialState = {
   isLoading: false,
   isSuccess: false,
   isError: false,
-  error: null,
+  error: [],
 };
 
 export const fetchFavoriteProperties = createAsyncThunk(
   "favoriteProperties/fetch",
-  async (_, thunkAPI) => {
+  async (value, thunkAPI) => {
+    let route = `${FAVOURITE_PROPERTIES}?page=${value}`;
     try {
       const { headers } = getHeaders();
-      const response = await axiosClient.get(FAVOURITE_PROPERTIES, {
+      const response = await axiosClient.get(route, {
         headers: headers,
       });
       const data = await response.data;
       return data;
     } catch (error) {
+      showErrorMessage(error.response.data);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -39,6 +47,7 @@ export const addFavoriteProperty = createAsyncThunk(
       const data = await response.data;
       return data;
     } catch (error) {
+      showErrorMessage(error.response.data);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -58,6 +67,7 @@ export const deleteFavoriteProperty = createAsyncThunk(
       const data = await response.data;
       return { data, id };
     } catch (error) {
+      showErrorMessage(error.response.data);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -68,33 +78,43 @@ const favoritePropertiesSlice = createSlice({
   initialState,
   reducers: {
     updateFavouritePagePropeties: (state, action) => {
-      state.data = [...state.data].filter((item) => item.id !== action.payload);
+      state.data = [...state.data].filter(
+        (item) => item.id !== action.payload.id
+      );
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchFavoriteProperties.pending, (state) => {
-        state.isLoading = true;
-        state.isSuccess = false;
-        state.isError = false;
-        state.error = null;
+        pendingState(state);
       })
       .addCase(fetchFavoriteProperties.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = true;
+        fulfilledState(state);
         state.data = action.payload.data.properties;
         state.paginationData = action.payload.meta;
       })
       .addCase(fetchFavoriteProperties.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
-        state.error = action.payload;
+        rejectedState(state, action);
       })
       .addCase(addFavoriteProperty.pending, (state) => {
-        state.isLoading = true;
-        state.isSuccess = false;
-        state.isError = false;
-        state.error = null;
+        pendingState(state);
+      })
+      .addCase(addFavoriteProperty.fulfilled, (state, action) => {
+        fulfilledState(state);
+        state.data.push(action.payload);
+      })
+      .addCase(addFavoriteProperty.rejected, (state, action) => {
+        rejectedState(state, action);
+      })
+      .addCase(deleteFavoriteProperty.pending, (state) => {
+        pendingState(state);
+      })
+      .addCase(deleteFavoriteProperty.fulfilled, (state, action) => {
+        fulfilledState(state);
+        state.data = state.data.filter((item) => item.id !== action.payload.id);
+      })
+      .addCase(deleteFavoriteProperty.rejected, (state, action) => {
+        rejectedState(state, action);
       });
   },
 });

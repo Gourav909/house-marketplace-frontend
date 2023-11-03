@@ -1,18 +1,20 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import Dashboard from "src/components/Dashboard/Dashboard";
-import { fetchFavoriteProperties } from "../favoriteProperty/Favorite.slice";
+import { fetchFavoriteProperties } from "./Favorite.slice";
 
 const FavouritePropertiesPage = () => {
-  const { data, paginationData, isLoading } = useSelector(
-    (state) => state.favoriteProperties
-  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const { data, paginationData, isLoading } = useSelector((state) => {
+    return state.favoriteProperties;
+  });
 
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(fetchFavoriteProperties());
+    dispatch(fetchFavoriteProperties(1));
+  // eslint-disable-next-line
   }, []);
 
   return (
@@ -20,7 +22,9 @@ const FavouritePropertiesPage = () => {
       properties={data}
       paginationData={paginationData}
       fetching={isLoading}
-      isFav={true}
+      fromFavoritePage={true}
+      setCurrentPage={setCurrentPage}
+      currentPage={currentPage}
     />
   );
 };

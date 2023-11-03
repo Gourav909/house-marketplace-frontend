@@ -17,7 +17,11 @@ const DeleteConfirmationDialog = ({
   content,
 }) => {
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      data-testid="delete-confirmation-dialog"
+    >
       {title && <DialogTitle>{title}</DialogTitle>}
       <DialogContent>
         <DialogContentText>{content}</DialogContentText>

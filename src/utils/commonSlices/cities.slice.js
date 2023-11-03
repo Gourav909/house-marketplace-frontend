@@ -3,7 +3,12 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getHeaders } from "src/config/headers";
 import axiosClient from "src/config/axios";
 import { FETCH_CITIES } from "src/constants/apiUrls";
-
+import { showErrorMessage } from "src/utils/errorHandler";
+import {
+  fulfilledState,
+  pendingState,
+  rejectedState,
+} from "src/utils/commonSlices/mockSlice";
 const initialState = {
   citiesData: [],
   fetching: false,
@@ -23,6 +28,7 @@ export const fetchCities = createAsyncThunk(
       const cities = await response.data;
       return cities;
     } catch (error) {
+      showErrorMessage(error.response.data);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -35,21 +41,14 @@ const citiesSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchCities.pending, (state) => {
-        state.fetching = true;
-        state.isError = false;
-        state.isSuccess = false;
+        pendingState(state);
       })
       .addCase(fetchCities.fulfilled, (state, action) => {
-        state.fetching = false;
-        state.isError = false;
-        state.isSuccess = true;
+        fulfilledState(state);
         state.citiesData = action.payload.data;
       })
       .addCase(fetchCities.rejected, (state, action) => {
-        state.fetching = false;
-        state.isError = true;
-        state.isSuccess = false;
-        state.error = action.payload.error[0];
+        rejectedState(state, action);
       });
   },
 });

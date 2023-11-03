@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useFormik } from "formik";
 import {
   TextField,
@@ -8,6 +8,7 @@ import {
   Typography,
   CircularProgress,
   Paper,
+  useMediaQuery,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -37,23 +38,32 @@ const LoginPage = () => {
     });
 
   useEffect(() => {
-    if (isSuccess) {
-      const { type: userRole } = data.data;
-      navigate("/dashboard", {
-        replace: true,
-        state: { isEditable: userRole === "Admin" ? true : false },
-      });
-    } else if (isError) {
-      navigate("/");
-      dispatch(clearState());
-    }
+    const handleNavigation = () => {
+      if (isSuccess) {
+        const { type: userRole } = data.data;
+        navigate("/dashboard", {
+          replace: true,
+          state: { isEditable: userRole === "Admin" ? true : false },
+        });
+      } else if (isError) {
+        navigate("/");
+        dispatch(clearState());
+      }
+    };
+
+    handleNavigation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess, isError]);
+
+  const isMobile = useMediaQuery("(max-width:800px)");
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={12} md={7}>
-        <img src={LoginImage} alt="login" />
-      </Grid>
+      {!isMobile && (
+        <Grid item xs={12} md={7}>
+          <img src={LoginImage} alt="login" />
+        </Grid>
+      )}
       <Grid
         item
         xs={12}
@@ -96,6 +106,7 @@ const LoginPage = () => {
                 onBlur={handleBlur}
                 error={touched.email && errors.email && true}
                 helperText={touched.email && errors.email}
+                data-testid="email-input"
               />
               <TextField
                 margin="normal"
@@ -111,6 +122,7 @@ const LoginPage = () => {
                 onBlur={handleBlur}
                 error={touched.password && errors.password && true}
                 helperText={touched.password && errors.password}
+                data-testid="password-input"
               />
               <Grid container />
               <Box sx={{ mt: 2 }}>

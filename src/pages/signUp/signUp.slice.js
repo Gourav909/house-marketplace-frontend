@@ -4,13 +4,18 @@ import { toast } from "react-toastify";
 import axiosClient from "src/config/axios";
 import { SIGN_UP } from "src/constants/apiUrls";
 import { showErrorMessage } from "src/utils/errorHandler";
+import {
+  fulfilledState,
+  pendingState,
+  rejectedState,
+} from "src/utils/commonSlices/mockSlice";
 
 const initialState = {
   data: {},
   isLoading: false,
   isSuccess: false,
   isError: false,
-  error: null,
+  error: [],
 };
 
 export const signUpUser = createAsyncThunk(
@@ -20,10 +25,11 @@ export const signUpUser = createAsyncThunk(
       let response = await axiosClient.post(SIGN_UP, { ...user });
       let data = await response.data;
       if (data) {
+        toast.success("SignUp successfully");
         return data;
       }
     } catch (error) {
-      showErrorMessage(error);
+      showErrorMessage(error.response.data);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -37,19 +43,15 @@ export const signUpSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(signUpUser.pending, (state) => {
+      pendingState(state);
       state.isLoading = true;
     });
     builder.addCase(signUpUser.fulfilled, (state, action) => {
-      state.isLoading = false;
-      state.isError = false;
-      state.isSuccess = true;
+      fulfilledState(state);
       state.data = action.payload;
     });
     builder.addCase(signUpUser.rejected, (state, action) => {
-      state.isLoading = false;
-      state.isError = true;
-      state.isSuccess = false;
-      state.error = action.payload.error[0];
+      rejectedState(state, action);
     });
   },
 });

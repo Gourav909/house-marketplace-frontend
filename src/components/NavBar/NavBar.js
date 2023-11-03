@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { AppBar, Toolbar, Button } from "@mui/material";
 import { styled } from "@mui/system";
 
-import { clearState } from "../../pages/login/login.slice";
+import { clearState } from "src/pages/login/login.slice";
 import useUserType from "src/hooks/useUserType";
 
 const NavLink = styled((props) => (

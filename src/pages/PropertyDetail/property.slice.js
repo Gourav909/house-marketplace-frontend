@@ -3,6 +3,12 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosClient from "src/config/axios";
 import { getHeaders } from "src/config/headers";
 import { PROPERTIES } from "src/constants/apiUrls";
+import { showErrorMessage } from "src/utils/errorHandler";
+import {
+  fulfilledState,
+  pendingState,
+  rejectedState,
+} from "src/utils/commonSlices/mockSlice";
 
 const initialState = {
   data: {},
@@ -24,6 +30,7 @@ export const fetchPropertyDetail = createAsyncThunk(
       let data = await response.data;
       return data;
     } catch (error) {
+      showErrorMessage(error.response.data);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
@@ -37,19 +44,14 @@ export const propertyDetailSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(fetchPropertyDetail.pending, (state) => {
-      state.isLoading = true;
+      pendingState(state);
     });
     builder.addCase(fetchPropertyDetail.fulfilled, (state, action) => {
-      state.isLoading = false;
-      state.isError = false;
-      state.isSuccess = true;
+      fulfilledState(state);
       state.data = action.payload.data;
     });
     builder.addCase(fetchPropertyDetail.rejected, (state, action) => {
-      state.isLoading = false;
-      state.isError = true;
-      state.isSuccess = false;
-      state.error = action.payload.error[0];
+      rejectedState(state, action);
     });
   },
 });

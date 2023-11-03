@@ -2,14 +2,14 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Grid, Button, IconButton, Tooltip, Paper } from "@mui/material";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import AddIcon from "@mui/icons-material/Add";
-
-import SearchBar from "../SearchBar/SearchBar";
-import useDebounce from "src/hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
+
+import SearchBar from "src/components/SearchBar/SearchBar";
+import useDebounce from "src/hooks/useDebounce";
 import { fetchProperties } from "./dashboard.slice";
-import Modal from "../Modal/Modal";
-import Filters from "../Filter/Filters";
+import Modal from "src/components/Modal/Modal";
+import Filters from "src/components/Filter/Filters";
 
 const DashboardHeader = ({ isAdmin, setCurrentPage, currentPage }) => {
   const [searchInput, setSearchInput] = useState(null);
@@ -19,14 +19,18 @@ const DashboardHeader = ({ isAdmin, setCurrentPage, currentPage }) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (debouncedSearch) {
-      const queryParams = `page=${1}&search=${debouncedSearch}`;
+    if (debouncedSearch || searchInput === '') {
+      const queryParams = {
+        currentPage: 1,
+        query: debouncedSearch,
+      };
       dispatch(fetchProperties(queryParams));
       setCurrentPage(1);
       localStorage.setItem("currentPage", 1);
       return;
     }
-  }, [debouncedSearch]);
+  // eslint-disable-next-line
+  }, [debouncedSearch, searchInput]);
 
   const onChangeHandler = (event) => {
     let { value } = event.target;
@@ -73,6 +77,7 @@ const DashboardHeader = ({ isAdmin, setCurrentPage, currentPage }) => {
                   maxWidth: "153px",
                   float: "right",
                 }}
+                data-testid="addBtn"
               >
                 Add
               </Button>
@@ -83,6 +88,7 @@ const DashboardHeader = ({ isAdmin, setCurrentPage, currentPage }) => {
       <Modal
         open={isFilterModalOpen}
         onClose={handleModalPopup}
+        title={"Filter Properties"}
         childComponent={
           <Filters
             debouncedSearch={debouncedSearch}

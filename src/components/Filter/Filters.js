@@ -3,10 +3,10 @@ import { Button, Box, Grid } from "@mui/material";
 import PropTypes from "prop-types";
 import { useDispatch } from "react-redux";
 
-import SelectInput from "../SelectInput/SelectInput";
-import SliderInput from "../SliderInput/SliderInput";
+import SelectInput from "src/components/SelectInput/SelectInput";
+import SliderInput from "src/components/SliderInput/SliderInput";
 import useFetchCitiesAndDistricts from "src/hooks/useFetchCitiesAndDistricts";
-import { fetchProperties } from "../Dashboard/dashboard.slice";
+import { fetchProperties } from "src/components/Dashboard/dashboard.slice";
 
 const typeOptions = [
   { id: "residential", name: "Residential" },
@@ -18,7 +18,7 @@ const Filters = ({ onClose, currentPage, debouncedSearch }) => {
     city: null,
     district: [],
     property_type: "",
-    price_per_month: [1000, 30000],
+    rent_per_month: [1000, 30000],
     net_size: [300, 3000],
   });
 
@@ -45,35 +45,38 @@ const Filters = ({ onClose, currentPage, debouncedSearch }) => {
   };
 
   const buildQueryParams = (filter) => {
-    const queryParams = [];
-
-    for (const key in filter) {
-      const value = filter[key];
-
-      if (value !== null && value !== undefined && value !== "") {
+    return Object.entries(filter)
+      .filter(([key, value]) => value != null && value !== "")
+      .flatMap(([key, value]) => {
         if (Array.isArray(value)) {
-          queryParams.push(`filter_by[${key}]=${value.join(",")}`);
+          return value
+            .filter((item) => item != null)
+            .map((item) => `${key}[]=${encodeURIComponent(item)}`);
         } else {
-          queryParams.push(`filter_by[${key}]=${value}`);
+          return `${key}=${encodeURIComponent(value)}`;
         }
-      }
-    }
-
-    return queryParams.join("&");
+      })
+      .join("&");
   };
 
   const handleSubmit = () => {
     const queryParams = buildQueryParams(selectedFilters);
+    const currentPage = 1;
     let queryParam =
       debouncedSearch !== ""
         ? `page=${currentPage}&search=${debouncedSearch}`
         : `page=${currentPage}`;
     let queryParamWithString = queryParams.concat("&", queryParam);
-    dispatch(fetchProperties(queryParamWithString));
+    const queryParamsData = {
+      currentPage: currentPage,
+      query: debouncedSearch,
+      filter: queryParamWithString,
+    };
+    dispatch(fetchProperties(queryParamsData));
     onClose();
   };
 
-  const { city, property_type, district, net_size, price_per_month } =
+  const { city, property_type, district, net_size, rent_per_month } =
     selectedFilters;
 
   return (
@@ -85,6 +88,7 @@ const Filters = ({ onClose, currentPage, debouncedSearch }) => {
           value={property_type}
           options={typeOptions}
           onChange={handleFilterChange}
+          dataTestId="propertyType"
         />
 
         <SelectInput
@@ -93,6 +97,7 @@ const Filters = ({ onClose, currentPage, debouncedSearch }) => {
           options={cities}
           value={city}
           onChange={handleFilterChange}
+          dataTestId="city"
         />
 
         <SelectInput
@@ -102,6 +107,7 @@ const Filters = ({ onClose, currentPage, debouncedSearch }) => {
           options={districtOptions}
           multiple={true}
           onChange={handleFilterChange}
+          dataTestId="district"
         />
 
         <SliderInput
@@ -111,15 +117,17 @@ const Filters = ({ onClose, currentPage, debouncedSearch }) => {
           min={300}
           max={3000}
           onChange={handleFilterChange}
+          dataTestId="netSize"
         />
 
         <SliderInput
           label="Rent Per Month"
-          name="price_per_month"
-          value={price_per_month}
+          name="rent_per_month"
+          value={rent_per_month}
           min={1000}
           max={30000}
           onChange={handleFilterChange}
+          dataTestId="rentPerMonth"
         />
       </Grid>
       <Grid container justifyContent="flex-end" alignItems="flex-end">

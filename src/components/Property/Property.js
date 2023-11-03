@@ -16,24 +16,25 @@ import EditIcon from "@mui/icons-material/Edit";
 
 import {
   addFavoriteProperty,
+  fetchFavoriteProperties,
   deleteFavoriteProperty,
   updateFavouritePagePropeties,
-} from "src/pages/favoriteProperty/Favorite.slice";
+} from "src/pages/favouriteProperties/Favorite.slice";
 import DeleteConfirmationDialog from "src/components/DeleteConfirmationDialog/DeleteConfirmationDialog";
-import { deletePropertyById } from "src/components/admin/propertyForm.slice";
-import FavoriteProperty from "../FavoriteProperty/FavoriteProperty";
+import { deletePropertyById } from "src/components/PropertyForm/propertyForm.slice";
+import FavoriteProperty from "src/components/FavoriteProperty/FavoriteProperty";
 import {
   fetchProperties,
   updateDashboardFavPropeties,
-} from "../Dashboard/dashboard.slice";
+} from "src/components/Dashboard/dashboard.slice";
 
 const Property = ({
   propertyDetail,
   isAdmin,
   currentPage,
-  arr,
+  currentPageProperties,
   setCurrentPage,
-  isFav,
+  fromFavoritePage,
 }) => {
   const {
     id,
@@ -53,24 +54,33 @@ const Property = ({
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleFavIconChanges = useCallback(() => {
-    const newFavourite = !is_favourite;
-    const formData = new FormData();
-    formData.append("property_id", id);
-    formData.append("is_favourite", newFavourite);
-
+  const handleAction = (newFavourite, formData) => {
     if (newFavourite) {
       dispatch(addFavoriteProperty(formData)).then(() =>
         dispatch(updateDashboardFavPropeties({ id, is_favourite: true }))
       );
     } else {
       dispatch(deleteFavoriteProperty(id)).then(() => {
-        if (isFav) {
+        if (fromFavoritePage) {
           dispatch(updateFavouritePagePropeties(id));
         }
         dispatch(updateDashboardFavPropeties({ id, is_favourite: false }));
+        if (currentPage !== 1 && currentPageProperties.length === 1) {
+          const updatedCurrentPage = currentPage - 1;
+          setCurrentPage(updatedCurrentPage);
+          dispatch(fetchFavoriteProperties(updatedCurrentPage));
+        }
       });
     }
+  };
+
+  const handleFavIconChanges = useCallback(() => {
+    const newFavourite = !is_favourite;
+    const formData = new FormData();
+    formData.append("property_id", id);
+    formData.append("is_favourite", newFavourite);
+    handleAction(newFavourite, formData);
+  // eslint-disable-next-line
   }, [dispatch, id, is_favourite]);
 
   const handleHoverIcon = useCallback(() => {
@@ -84,17 +94,18 @@ const Property = ({
   const confirmDelete = useCallback(() => {
     dispatch(deletePropertyById(id)).then((res) => {
       if (res.payload) {
-        if (arr.length === 1 && currentPage !== 1) {
-          const updateCurrentPage = currentPage - 1;
-          dispatch(fetchProperties(`page=${updateCurrentPage}`));
-          setCurrentPage(updateCurrentPage);
-          localStorage.setItem("currentPage", updateCurrentPage);
+        if (currentPageProperties.length === 1 && currentPage !== 1) {
+          const updatedCurrentPage = currentPage - 1;
+          setCurrentPage(updatedCurrentPage);
+          dispatch(fetchProperties({ currentPage: updatedCurrentPage, query: "" }));
         } else {
-          dispatch(fetchProperties(`page=${currentPage}`));
+          dispatch(fetchProperties({ currentPage, query: "" }));
         }
       }
     });
+
     handleDeleteDialog();
+  // eslint-disable-next-line
   }, [dispatch, id, handleDeleteDialog]);
 
   const renderAdminActions = useCallback(() => {
@@ -114,6 +125,7 @@ const Property = ({
             sx={{
               color: "white",
             }}
+            data-testid="edit-button"
           >
             <EditIcon />
           </IconButton>
@@ -124,6 +136,7 @@ const Property = ({
             sx={{
               color: "white",
             }}
+            data-testid="delete-button"
           >
             <DeleteIcon />
           </IconButton>
@@ -149,58 +162,66 @@ const Property = ({
       key={id}
       sx={{
         boxShadow: "4px 4px 8px rgba(0, 0, 0, 0.2)",
+        position: "relative",
       }}
       className="card-hover"
+      data-testid="property-card"
     >
       <Card
         sx={{
           maxWidth: 600,
           zIndex: 1,
-          position: "relative",
         }}
       >
         {isAdmin ? renderAdminActions() : renderUserFavorite()}
-        <CardMedia
-          sx={{
-            height: 300,
-            position: "relative",
-          }}
-          image={`http://localhost:3000/${image_url}`}
-          title={title}
-        />
-        <CardContent>
-          <Typography variant="h4" component="div">
-            <Typography color="red" variant="subtitle2" component="span">
-              NT$
+
+        <Box
+          onClick={() =>
+            !isAdmin ? navigate(`/user/property-details/${id}`) : null
+          }
+          data-testid="box-card"
+        >
+          <CardMedia
+            sx={{
+              height: 300,
+            }}
+            image={`http://localhost:3000/${image_url}`}
+            title={title}
+          />
+          <CardContent>
+            <Typography variant="h4" component="div">
+              <Typography color="red" variant="subtitle2" component="span">
+                NT$
+              </Typography>
+              <Typography
+                color="red"
+                fontSize="24px"
+                variant="span"
+                component="span"
+              >
+                {price_per_month}
+              </Typography>
+              <Typography variant="subtitle2" component="span">
+                {" "}
+                / month
+              </Typography>
             </Typography>
-            <Typography
-              color="red"
-              fontSize="24px"
-              variant="span"
-              component="span"
-            >
-              {price_per_month}
-            </Typography>
-            <Typography variant="subtitle2" component="span">
-              {" "}
-              / month
-            </Typography>
-          </Typography>
-          <Grid sx={{ my: 1 }}>
-            <Typography variant="h6">{title}</Typography>
-            <Typography color="#6C757D" variant="span" component="span">
-              {address.city_name} {address.district_name}
-            </Typography>
-          </Grid>
-          <Grid sx={{ my: 2 }}>
-            <Typography variant="subtitle1">
-              {net_size} Ping {net_size_in_sqr_feet}
-            </Typography>
-            <Typography variant="subtitle1">
-              Property Type: {property_type}
-            </Typography>
-          </Grid>
-        </CardContent>
+            <Grid sx={{ my: 1 }}>
+              <Typography variant="h6">{title}</Typography>
+              <Typography color="#6C757D" variant="span" component="span">
+                {address?.city_name} {address?.district_name}
+              </Typography>
+            </Grid>
+            <Grid sx={{ my: 2 }}>
+              <Typography variant="subtitle1">
+                {net_size} Ping {net_size_in_sqr_feet}
+              </Typography>
+              <Typography variant="subtitle1">
+                Property Type: {property_type}
+              </Typography>
+            </Grid>
+          </CardContent>
+        </Box>
       </Card>
 
       <DeleteConfirmationDialog
